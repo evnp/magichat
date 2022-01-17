@@ -1,0 +1,34 @@
+{
+  "name": "magichat",
+  "version": "0.0.1",
+  "description": "A magical question-asking hat, which will ask you and your friends questions via browser or CLI.",
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint *.spec.ts",
+    "format": "eslint --fix *.spec.ts",
+    "check": "tsc --noEmit",
+    "build": "tsc",
+    "precommit": "npm run format && npm run check",
+    "githook": "grep -qxF 'npm run precommit' .git/hooks/pre-commit || echo 'npm run precommit' >> .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/evnp/magichat.git"
+  },
+  "author": "Evan Purcer",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^27.0.3",
+    "@typescript-eslint/eslint-plugin": "^5.8.1",
+    "@typescript-eslint/parser": "^5.8.1",
+    "eslint": "^8.5.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-jest": "^25.3.2",
+    "eslint-plugin-prettier": "^4.0.0",
+    "jest": "^27.4.5",
+    "prettier": "^2.5.1",
+    "ts-jest": "^27.1.2",
+    "typescript": "^4.5.4"
+  },
+  "dependencies": {}
+}

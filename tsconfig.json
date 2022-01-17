@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "strict": true,
+    "declaration": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "baseUrl": ".",
+    "types": ["jest"],
+    "lib": ["esnext", "dom"],
+    "outDir": "build/"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules"]
+}
