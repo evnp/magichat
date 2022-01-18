@@ -4,41 +4,88 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.magicHatStopRepeat = exports.magicHatStartRepeat = exports.magicHatGo = exports.magicHatBack = exports.magicHatNext = exports.magicHatBegin = exports.magicHatIsValidSeed = void 0;
-var seedrandom_1 = __importDefault(require("seedrandom"));
 var questions_1 = __importDefault(require("./questions"));
 var words_1 = __importDefault(require("./words"));
-var seedHistory = new Map();
-var encounteredQuestionIndices = new Set();
-function newSeed(seed, seconds) {
-    var prevSeed = seed;
-    var rng;
-    var questionIdx;
-    var baseSeed;
-    var rvsdSeed;
-    // Ensure no duplicate questions are asked:
-    do {
-        baseSeed = seed && removeSeedSeconds(seed);
-        rvsdSeed = baseSeed && Array.from(baseSeed).reverse().join("");
-        seed = "".concat(randWord(baseSeed), "-").concat(randWord(rvsdSeed));
-        rng = (0, seedrandom_1.default)(seed);
-        questionIdx = Math.floor(rng() * questions_1.default.length);
-    } while (encounteredQuestionIndices.has(questionIdx));
-    encounteredQuestionIndices.add(questionIdx);
+// Find the closest two numbers which multiply to produce N:
+function factors(n) {
+    var sqrt = Math.sqrt(n);
+    var largeFac = Math.ceil(sqrt);
+    var smallFac = Math.floor(sqrt);
+    while (largeFac * smallFac !== n) {
+        if (largeFac * smallFac < n) {
+            largeFac++;
+        }
+        else {
+            smallFac--;
+        }
+    }
+    return [largeFac, smallFac];
+}
+// Pick a step size which, when advancing through the questions list
+// circularily, will eventually hit all items with no duplicates:
+var questionListStepSize = Math.floor(questions_1.default.length / 2) + 1;
+// Reverse-map word indices for performant lookup:
+var wordIdxMap = new Map(words_1.default.map(function (word, idx) { return [word, idx]; }));
+function randWord() {
+    return words_1.default[Math.floor(Math.random() * words_1.default.length)];
+}
+function nextSeed(seed, seconds) {
+    if (!seed) {
+        seed = "".concat(randWord(), "-").concat(randWord()); // new session gets entirely random seed
+    }
+    // "Reversible" seed algorithm:
+    // Next question is calculated as prior question index + questionListStepSize.
+    // Prior question index was split into factors so we must parse these
+    // and multiply them. Then we calculate the new question index and split it
+    // back into another two factors, which are mapped to words. These words
+    // become the new seed.
+    var _a = seed.split("-"), prevWrdA = _a[0], prevWrdB = _a[1];
+    var _b = [
+        wordIdxMap.get(prevWrdA),
+        wordIdxMap.get(prevWrdB),
+    ], prevIdxA = _b[0], prevIdxB = _b[1];
+    var prevQIdx = (prevIdxA * prevIdxB) % questions_1.default.length;
+    var nextQIdx = prevQIdx + questionListStepSize;
+    if (nextQIdx >= questions_1.default.length) {
+        nextQIdx = nextQIdx - questions_1.default.length; // wrap around end of list
+    }
+    var _c = factors(nextQIdx), nextIdxA = _c[0], nextIdxB = _c[1];
+    var _d = [words_1.default[nextIdxA], words_1.default[nextIdxB]], nextWrdA = _d[0], nextWrdB = _d[1];
+    seed = "".concat(nextWrdA, "-").concat(nextWrdB);
     if (seconds) {
         seed = updateSeedSeconds(seed, seconds);
     }
-    // Maintain seed history for back/forth question navigation:
-    // note: omit seconds from seed history so that mechanisms may operate independently
-    seedHistory.set(removeSeedSeconds(seed), prevSeed ? removeSeedSeconds(prevSeed) : null);
     return seed;
 }
-function randWord(seed) {
-    var rng = seed ? (0, seedrandom_1.default)(seed) : Math.random;
-    return words_1.default[Math.floor(rng() * words_1.default.length)];
+function prevSeed(seed, seconds) {
+    // "Reversible" seed algorithm:
+    // Getting a prior seed from a subsequent seed (going "back" in the question
+    // list) is simply the reverse of the operations described above in nextSeed.
+    var _a = seed.split("-"), nextWrdA = _a[0], nextWrdB = _a[1];
+    var _b = [
+        wordIdxMap.get(nextWrdA),
+        wordIdxMap.get(nextWrdB),
+    ], nextIdxA = _b[0], nextIdxB = _b[1];
+    var nextQIdx = (nextIdxA * nextIdxB) % questions_1.default.length;
+    var prevQIdx = nextQIdx - questionListStepSize;
+    if (prevQIdx < 0) {
+        prevQIdx = prevQIdx + questions_1.default.length; // wrap around end of list
+    }
+    var _c = factors(prevQIdx), prevIdxA = _c[0], prevIdxB = _c[1];
+    var _d = [words_1.default[prevIdxA], words_1.default[prevIdxB]], prevWrdA = _d[0], prevWrdB = _d[1];
+    seed = "".concat(prevWrdA, "-").concat(prevWrdB);
+    if (seconds) {
+        seed = updateSeedSeconds(seed, seconds);
+    }
+    return seed;
 }
-function randQuestion(seed) {
-    var rng = (0, seedrandom_1.default)(removeSeedSeconds(seed));
-    return questions_1.default[Math.floor(rng() * questions_1.default.length)];
+function questionFromSeed(seed) {
+    var _a = seed.split("-"), facA = _a[0], facB = _a[1];
+    var _b = [words_1.default.indexOf(facA), words_1.default.indexOf(facB)], idxA = _b[0], idxB = _b[1];
+    if (idxA === -1 || idxB === -1) {
+        throw new Error("Invalid seed encountered");
+    }
+    return questions_1.default[(idxA * idxB) % questions_1.default.length];
 }
 function removeSeedSeconds(seed) {
     seed = seed.split("-").join("").slice(0, 8);
@@ -81,39 +128,34 @@ function magicHatIsValidSeed(seed) {
 }
 exports.magicHatIsValidSeed = magicHatIsValidSeed;
 function magicHatBegin(seed, handler) {
-    seed = (seed === null || seed === void 0 ? void 0 : seed.length) ? seed : newSeed(seed);
+    seed = (seed === null || seed === void 0 ? void 0 : seed.length) ? seed : nextSeed(seed);
     var seconds = parseSeedSeconds(seed);
     if (seconds > 0) {
         return magicHatStartRepeat(seed, seconds, handler);
     }
     else {
-        return [seed, randQuestion(seed), 0]; // zero seconds -> no repeat
+        return [seed, questionFromSeed(seed), 0]; // zero seconds -> no repeat
     }
 }
 exports.magicHatBegin = magicHatBegin;
 function magicHatNext(seed, seconds) {
-    seed = newSeed(seed, seconds);
-    return [seed, randQuestion(seed)];
+    seed = nextSeed(seed, seconds);
+    return [seed, questionFromSeed(seed)];
 }
 exports.magicHatNext = magicHatNext;
 function magicHatBack(seed, seconds) {
-    var _a;
-    seed = (_a = (seed && seedHistory.get(removeSeedSeconds(seed)))) !== null && _a !== void 0 ? _a : seed;
-    if (seconds) {
-        seed = updateSeedSeconds(seed, seconds);
-    }
-    return [seed, randQuestion(seed)];
+    seed = prevSeed(seed, seconds);
+    return [seed, questionFromSeed(seed)];
 }
 exports.magicHatBack = magicHatBack;
-function magicHatGo(seed, prevSeed, seconds) {
-    seedHistory.set(removeSeedSeconds(seed), removeSeedSeconds(prevSeed));
+function magicHatGo(seed, seconds) {
     if (seconds) {
         seed = updateSeedSeconds(seed, seconds);
     }
     else {
         seed = removeSeedSeconds(seed);
     }
-    return [seed, randQuestion(seed)];
+    return [seed, questionFromSeed(seed)];
 }
 exports.magicHatGo = magicHatGo;
 var repeatIntervalID = null;
@@ -121,10 +163,10 @@ function magicHatStartRepeat(seed, seconds, handler) {
     seed = updateSeedSeconds(seed, seconds);
     magicHatStopRepeat(seed);
     repeatIntervalID = setInterval(function () {
-        seed = newSeed(seed, seconds);
-        handler(seed, randQuestion(seed));
+        seed = nextSeed(seed, seconds);
+        handler(seed, questionFromSeed(seed));
     }, seconds * 1000);
-    return [seed, randQuestion(seed), seconds];
+    return [seed, questionFromSeed(seed), seconds];
 }
 exports.magicHatStartRepeat = magicHatStartRepeat;
 function magicHatStopRepeat(seed) {
@@ -133,6 +175,6 @@ function magicHatStopRepeat(seed) {
         clearInterval(repeatIntervalID);
         repeatIntervalID = null;
     }
-    return [seed !== null && seed !== void 0 ? seed : newSeed(), seed ? randQuestion(seed) : ""];
+    return [seed !== null && seed !== void 0 ? seed : nextSeed(), seed ? questionFromSeed(seed) : ""];
 }
 exports.magicHatStopRepeat = magicHatStopRepeat;

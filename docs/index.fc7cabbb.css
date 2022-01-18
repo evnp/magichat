@@ -1,0 +1,64 @@
+* {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: bold;
+  font-size: 1rem;
+}
+html,
+body,
+.magichat {
+  height: 100%;
+}
+.magichat {
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+h1 {
+  font-size: 3rem;
+  margin: 2rem;
+}
+h1,
+.controls,
+.info {
+  text-align: center;
+}
+input[type="number"] {
+  width: 3.5rem;
+}
+input[type="checkbox"] {
+  transform: translateY(2px);
+}
+button,
+label {
+  cursor: pointer;
+  user-select: none;
+  /* normally this would have browser prefixes added automatically via
+   * build tools, cutting corners.. (eg. -webkit-user-select: none) */
+}
+button,
+input {
+  padding: 4px 8px 6px 8px;
+  margin-bottom: 40px;
+  border: none;
+  background: lightgrey;
+  border-radius: 4px;
+}
+button {
+  margin: 8px;
+}
+button.next {
+  margin-right: 2px;
+}
+button:hover {
+  color: #0175ff;
+}
+button:active {
+  color: white;
+  background: black;
+}
+.info {
+  cursor: pointer;
+}
+
+/*# sourceMappingURL=index.fc7cabbb.css.map */

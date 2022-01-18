@@ -179,7 +179,7 @@ function main() {
                             break;
                         }
                         case Action.go: {
-                            _h = (0, core_1.magicHatGo)(actionValue, seed, repeating ? seconds : null), seed = _h[0], question = _h[1];
+                            _h = (0, core_1.magicHatGo)(actionValue, repeating ? seconds : null), seed = _h[0], question = _h[1];
                             askQuestion();
                             break;
                         }

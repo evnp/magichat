@@ -37,10 +37,9 @@ function askQuestion() {
 // Question-back functionality is accomplished via native browser history API:
 // (clicking the browser back button)
 window.onpopstate = function () {
-  const prevSeed = seed;
   seed = window.location.pathname.slice(1); // slice off leading slash
   if (seed.length && magicHatIsValidSeed(seed)) {
-    [seed, question] = magicHatGo(seed, prevSeed, repeating ? seconds : null);
+    [seed, question] = magicHatGo(seed, repeating ? seconds : null);
     window.history.replaceState(null, "", `/${seed}`);
     questionHeading.idx(0).textContent = question;
   }

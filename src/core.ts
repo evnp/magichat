@@ -1,50 +1,98 @@
-import seedrandom from "seedrandom";
-
 import questions from "./questions";
 import words from "./words";
 
-const seedHistory: Map<string, string | null> = new Map();
-const encounteredQuestionIndices: Set<number> = new Set();
+// Find the closest two numbers which multiply to produce N:
+function factors(n: number): [number, number] {
+  const sqrt = Math.sqrt(n);
+  let largeFac = Math.ceil(sqrt);
+  let smallFac = Math.floor(sqrt);
+  while (largeFac * smallFac !== n) {
+    if (largeFac * smallFac < n) {
+      largeFac++;
+    } else {
+      smallFac--;
+    }
+  }
+  return [largeFac, smallFac];
+}
 
-function newSeed(seed?: string | null, seconds?: number | null): string {
-  const prevSeed = seed;
-  let rng;
-  let questionIdx;
-  let baseSeed;
-  let rvsdSeed;
+// Pick a step size which, when advancing through the questions list
+// circularily, will eventually hit all items with no duplicates:
+const questionListStepSize = Math.floor(questions.length / 2) + 1;
 
-  // Ensure no duplicate questions are asked:
-  do {
-    baseSeed = seed && removeSeedSeconds(seed);
-    rvsdSeed = baseSeed && Array.from(baseSeed).reverse().join("");
-    seed = `${randWord(baseSeed)}-${randWord(rvsdSeed)}`;
-    rng = seedrandom(seed);
-    questionIdx = Math.floor(rng() * questions.length);
-  } while (encounteredQuestionIndices.has(questionIdx));
-  encounteredQuestionIndices.add(questionIdx);
+// Reverse-map word indices for performant lookup:
+const wordIdxMap = new Map(words.map((word, idx) => [word, idx]));
+
+function randWord(): string {
+  return words[Math.floor(Math.random() * words.length)];
+}
+
+function nextSeed(seed?: string | null, seconds?: number | null): string {
+  if (!seed) {
+    seed = `${randWord()}-${randWord()}`; // new session gets entirely random seed
+  }
+
+  // "Reversible" seed algorithm:
+  // Next question is calculated as prior question index + questionListStepSize.
+  // Prior question index was split into factors so we must parse these
+  // and multiply them. Then we calculate the new question index and split it
+  // back into another two factors, which are mapped to words. These words
+  // become the new seed.
+  const [prevWrdA, prevWrdB] = seed.split("-");
+  const [prevIdxA, prevIdxB] = [
+    wordIdxMap.get(prevWrdA),
+    wordIdxMap.get(prevWrdB),
+  ] as [number, number];
+  const prevQIdx = (prevIdxA * prevIdxB) % questions.length;
+  let nextQIdx = prevQIdx + questionListStepSize;
+  if (nextQIdx >= questions.length) {
+    nextQIdx = nextQIdx - questions.length; // wrap around end of list
+  }
+  const [nextIdxA, nextIdxB] = factors(nextQIdx);
+  const [nextWrdA, nextWrdB] = [words[nextIdxA], words[nextIdxB]];
+
+  seed = `${nextWrdA}-${nextWrdB}`;
 
   if (seconds) {
     seed = updateSeedSeconds(seed, seconds);
   }
 
-  // Maintain seed history for back/forth question navigation:
-  // note: omit seconds from seed history so that mechanisms may operate independently
-  seedHistory.set(
-    removeSeedSeconds(seed),
-    prevSeed ? removeSeedSeconds(prevSeed) : null
-  );
+  return seed;
+}
+
+function prevSeed(seed: string, seconds?: number | null): string {
+  // "Reversible" seed algorithm:
+  // Getting a prior seed from a subsequent seed (going "back" in the question
+  // list) is simply the reverse of the operations described above in nextSeed.
+  const [nextWrdA, nextWrdB] = seed.split("-");
+  const [nextIdxA, nextIdxB] = [
+    wordIdxMap.get(nextWrdA),
+    wordIdxMap.get(nextWrdB),
+  ] as [number, number];
+  const nextQIdx = (nextIdxA * nextIdxB) % questions.length;
+  let prevQIdx = nextQIdx - questionListStepSize;
+  if (prevQIdx < 0) {
+    prevQIdx = prevQIdx + questions.length; // wrap around end of list
+  }
+  const [prevIdxA, prevIdxB] = factors(prevQIdx);
+  const [prevWrdA, prevWrdB] = [words[prevIdxA], words[prevIdxB]];
+
+  seed = `${prevWrdA}-${prevWrdB}`;
+
+  if (seconds) {
+    seed = updateSeedSeconds(seed, seconds);
+  }
 
   return seed;
 }
 
-function randWord(seed?: string | null): string {
-  const rng = seed ? seedrandom(seed) : Math.random;
-  return words[Math.floor(rng() * words.length)];
-}
-
-function randQuestion(seed: string): string {
-  const rng = seedrandom(removeSeedSeconds(seed));
-  return questions[Math.floor(rng() * questions.length)];
+function questionFromSeed(seed: string): string {
+  const [facA, facB] = seed.split("-");
+  const [idxA, idxB] = [words.indexOf(facA), words.indexOf(facB)];
+  if (idxA === -1 || idxB === -1) {
+    throw new Error("Invalid seed encountered");
+  }
+  return questions[(idxA * idxB) % questions.length];
 }
 
 function removeSeedSeconds(seed: string): string {
@@ -98,14 +146,14 @@ export function magicHatBegin(
   seed: string | null,
   handler: (seed: string, question: string) => void
 ): [string, string, number] {
-  seed = seed?.length ? seed : newSeed(seed);
+  seed = seed?.length ? seed : nextSeed(seed);
 
   const seconds = parseSeedSeconds(seed);
 
   if (seconds > 0) {
     return magicHatStartRepeat(seed, seconds, handler);
   } else {
-    return [seed, randQuestion(seed), 0]; // zero seconds -> no repeat
+    return [seed, questionFromSeed(seed), 0]; // zero seconds -> no repeat
   }
 }
 
@@ -113,33 +161,28 @@ export function magicHatNext(
   seed: string,
   seconds?: number | null
 ): [string, string] {
-  seed = newSeed(seed, seconds);
-  return [seed, randQuestion(seed)];
+  seed = nextSeed(seed, seconds);
+  return [seed, questionFromSeed(seed)];
 }
 
 export function magicHatBack(
   seed: string,
   seconds?: number | null
 ): [string, string] {
-  seed = (seed && seedHistory.get(removeSeedSeconds(seed))) ?? seed;
-  if (seconds) {
-    seed = updateSeedSeconds(seed, seconds);
-  }
-  return [seed, randQuestion(seed)];
+  seed = prevSeed(seed, seconds);
+  return [seed, questionFromSeed(seed)];
 }
 
 export function magicHatGo(
   seed: string,
-  prevSeed: string,
   seconds?: number | null
 ): [string, string] {
-  seedHistory.set(removeSeedSeconds(seed), removeSeedSeconds(prevSeed));
   if (seconds) {
     seed = updateSeedSeconds(seed, seconds);
   } else {
     seed = removeSeedSeconds(seed);
   }
-  return [seed, randQuestion(seed)];
+  return [seed, questionFromSeed(seed)];
 }
 
 type Timer = ReturnType<typeof setInterval>;
@@ -155,11 +198,11 @@ export function magicHatStartRepeat(
   magicHatStopRepeat(seed);
 
   repeatIntervalID = setInterval(() => {
-    seed = newSeed(seed, seconds);
-    handler(seed, randQuestion(seed));
+    seed = nextSeed(seed, seconds);
+    handler(seed, questionFromSeed(seed));
   }, seconds * 1000);
 
-  return [seed, randQuestion(seed), seconds];
+  return [seed, questionFromSeed(seed), seconds];
 }
 
 export function magicHatStopRepeat(seed?: string | null): [string, string] {
@@ -170,5 +213,5 @@ export function magicHatStopRepeat(seed?: string | null): [string, string] {
     repeatIntervalID = null;
   }
 
-  return [seed ?? newSeed(), seed ? randQuestion(seed) : ""];
+  return [seed ?? nextSeed(), seed ? questionFromSeed(seed) : ""];
 }

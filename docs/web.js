@@ -31,10 +31,9 @@ function askQuestion() {
 // (clicking the browser back button)
 window.onpopstate = function () {
     var _a;
-    var prevSeed = seed;
     seed = window.location.pathname.slice(1); // slice off leading slash
     if (seed.length && (0, core_1.magicHatIsValidSeed)(seed)) {
-        _a = (0, core_1.magicHatGo)(seed, prevSeed, repeating ? seconds : null), seed = _a[0], question = _a[1];
+        _a = (0, core_1.magicHatGo)(seed, repeating ? seconds : null), seed = _a[0], question = _a[1];
         window.history.replaceState(null, "", "/".concat(seed));
         questionHeading.idx(0).textContent = question;
     }

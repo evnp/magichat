@@ -172,7 +172,6 @@ async function main() {
       case Action.go: {
         [seed, question] = magicHatGo(
           actionValue as string,
-          seed,
           repeating ? seconds : null
         );
         askQuestion();
