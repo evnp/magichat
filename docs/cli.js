@@ -95,7 +95,7 @@ function printHelp() {
     printInfo();
 }
 function printVersion() {
-    console.log("Magic Hat 🎩 0.0.1\n");
+    console.log("\nMagic Hat 🎩 0.0.1\n");
 }
 function printInfo() {
     console.log("> ENTER           --> go to next question");

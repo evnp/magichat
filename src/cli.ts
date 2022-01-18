@@ -70,7 +70,7 @@ function printHelp(): void {
 }
 
 function printVersion(): void {
-  console.log("Magic Hat 🎩 0.0.1\n");
+  console.log("\nMagic Hat 🎩 0.0.1\n");
 }
 
 function printInfo(): void {

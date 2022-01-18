@@ -1,5 +1,5 @@
 {
-  "name": "magichat",
+  "name": "magicalhat",
   "version": "0.0.1",
   "description": "A magical question-asking hat, which will ask you and your friends questions via browser or CLI.",
   "bin": {
