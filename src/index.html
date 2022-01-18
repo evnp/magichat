@@ -3,7 +3,12 @@
   <head>
     <title>Magic Hat</title>
     <meta name="viewport" content="initial-scale=1" />
-    <link rel="stylesheet" type="text/css" href="./magichat-web.css" />
+    <link rel="stylesheet" type="text/css" href="./index.css" />
+    <!-- favicon courtesy of https://css-tricks.com/emoji-as-a-favicon/: -->
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎩</text></svg>"
+    />
   </head>
   <body>
     <div class="magichat">
@@ -20,7 +25,14 @@
         <button class="next">next question</button>
         <button class="copy">copy url to share</button>
       </div>
+      <div class="info">
+        or run
+        <button class="cli">
+          npm install -g github:evnp/magichat && magichat
+        </button>
+        to join via command line (click to copy)
+      </div>
     </div>
-    <script type="module" src="./magichat-web.ts"></script>
+    <script type="module" src="./web.ts"></script>
   </body>
 </html>

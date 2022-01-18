@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import readline from "readline";
 
 import {
@@ -8,7 +10,7 @@ import {
   magicHatStartRepeat,
   magicHatStopRepeat,
   magicHatIsValidSeed,
-} from "./magichat";
+} from "./core";
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -67,6 +69,10 @@ function printHelp(): void {
   printInfo();
 }
 
+function printVersion(): void {
+  console.log("Magic Hat 🎩 0.0.1\n");
+}
+
 function printInfo(): void {
   console.log("> ENTER           --> go to next question");
   console.log("> next            --> go to next question (alias: 'n')");
@@ -92,6 +98,8 @@ async function main() {
   const defaultSeconds = 60; // default to 1 minute ask repeat duration:
   let seconds = defaultSeconds;
   let repeating = false;
+
+  printVersion();
 
   if (process.argv.some((arg) => /^--?h(elp)?$/i.test(arg))) {
     printHelp();

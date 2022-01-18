@@ -33,6 +33,8 @@ button,
 label {
   cursor: pointer;
   user-select: none;
+  /* normally this would have browser prefixes added automatically via
+   * build tools, cutting corners.. (eg. -webkit-user-select: none) */
 }
 button,
 input {
@@ -43,7 +45,10 @@ input {
   border-radius: 4px;
 }
 button {
-  margin-left: 12px;
+  margin: 8px;
+}
+button.next {
+  margin-right: 2px;
 }
 button:hover {
   color: #0175ff;
@@ -52,3 +57,8 @@ button:active {
   color: white;
   background: black;
 }
+.info {
+  cursor: pointer;
+}
+
+/*# sourceMappingURL=index.61d3354a.css.map */

@@ -2,13 +2,16 @@
   "name": "magichat",
   "version": "0.0.1",
   "description": "A magical question-asking hat, which will ask you and your friends questions via browser or CLI.",
+  "bin": {
+    "magichat": "dist/cli.js"
+  },
   "scripts": {
-    "start": "tsc && node build/magichat-cli.js",
+    "start": "tsc && ./dist/cli.js",
     "test": "jest",
     "lint": "eslint src/**/*.ts test/**/*.ts",
     "format": "eslint --fix src/**/*.ts test/**/*.ts",
     "check": "tsc --noEmit",
-    "build": "tsc && parcel build src/index.html",
+    "build": "tsc && chmod +x dist/cli.js && parcel build src/index.html",
     "serve": "parcel src/index.html",
     "precommit": "npm run format && npm run check",
     "githook": "grep -qxF 'npm run precommit' .git/hooks/pre-commit || echo 'npm run precommit' >> .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit"

@@ -7,26 +7,30 @@ import {
   magicHatStartRepeat,
   magicHatStopRepeat,
   magicHatIsValidSeed,
-} from "./magichat";
+} from "./core";
 
-const elements = {
-  question: L("h1"),
-  repeating: L('input[type="checkbox"]'),
-  seconds: L('input[type="number"]'),
-  next: L("button.next"),
-  copy: L("button.copy"),
-};
+const questionHeading = L("h1");
+const repeatingCheckbox = L('input[type="checkbox"]');
+const secondsInput = L('input[type="number"]');
+const nextButton = L("button.next");
+const copyUrlButton = L("button.copy");
+const infoSection = L(".info");
+const copyCliButton = L("button.cli");
 
 let question: string;
 let seconds = 0;
 let repeating = false;
 let seed = window.location.pathname.slice(1); // slice off leading slash
 
-const originalCopyText = elements.copy.idx(0).textContent;
+const originalTitleText = document.title.trim();
+const originalCopyUrlText = copyUrlButton.idx(0).textContent.trim();
+const originalCopyCliText = copyCliButton.idx(0).textContent.trim();
 
 function askQuestion() {
-  elements.question.idx(0).textContent = question;
-  elements.copy.idx(0).textContent = originalCopyText;
+  document.title = `${originalTitleText} · ${seed}`;
+  questionHeading.idx(0).textContent = question;
+  copyUrlButton.idx(0).textContent = originalCopyUrlText;
+  copyCliButton.idx(0).textContent = `${originalCopyCliText} ${seed}`;
   window.history.pushState(null, "", `/${seed}`);
 }
 
@@ -38,7 +42,7 @@ window.onpopstate = function () {
   if (seed.length && magicHatIsValidSeed(seed)) {
     [seed, question] = magicHatGo(seed, prevSeed, repeating ? seconds : null);
     window.history.replaceState(null, "", `/${seed}`);
-    elements.question.idx(0).textContent = question;
+    questionHeading.idx(0).textContent = question;
   }
 };
 
@@ -58,19 +62,19 @@ askQuestion();
 
 if (seconds > 0) {
   repeating = true;
-  elements.seconds.idx(0).value = seconds;
-  elements.repeating.idx(0).checked = true;
+  secondsInput.idx(0).value = seconds;
+  repeatingCheckbox.idx(0).checked = true;
 }
 
-elements.next.on("click", () => {
+nextButton.on("click", () => {
   [seed, question] = magicHatNext(seed, repeating ? seconds : null);
   askQuestion();
 });
 
 function onRepeatSettingChange() {
-  const checked = elements.repeating.idx(0).checked;
+  const checked = repeatingCheckbox.idx(0).checked;
   if (checked) {
-    seconds = parseInt(elements.seconds.idx(0).value, 10);
+    seconds = parseInt(secondsInput.idx(0).value, 10);
     [seed, question, seconds] = magicHatStartRepeat(seed, seconds, () => {
       [seed, question] = magicHatNext(seed, seconds);
       askQuestion();
@@ -84,13 +88,19 @@ function onRepeatSettingChange() {
   }
 }
 
-elements.repeating.on("change", onRepeatSettingChange);
-elements.seconds.on("change", () => {
-  elements.repeating.idx(0).checked = true;
+repeatingCheckbox.on("change", onRepeatSettingChange);
+secondsInput.on("change", () => {
+  repeatingCheckbox.idx(0).checked = true;
   onRepeatSettingChange();
 });
 
-elements.copy.on("click", () => {
+copyUrlButton.on("click", () => {
   L.copy(window.location.href);
-  elements.copy.idx(0).textContent = "Copied!";
+  copyUrlButton.idx(0).textContent = "Copied!";
+});
+
+infoSection.on("click", () => {
+  const button = copyCliButton.idx(0);
+  L.copy(button.textContent.trim());
+  button.textContent = "Copied!";
 });

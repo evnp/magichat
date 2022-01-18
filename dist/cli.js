@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -40,7 +41,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var readline_1 = __importDefault(require("readline"));
-var magichat_1 = require("./magichat");
+var core_1 = require("./core");
 var rl = readline_1.default.createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -72,7 +73,7 @@ function parseAction(action) {
     if (Object.values(Action).includes(action)) {
         return [action, null];
     }
-    if ((0, magichat_1.magicHatIsValidSeed)(action)) {
+    if ((0, core_1.magicHatIsValidSeed)(action)) {
         return [Action.go, action];
     }
     return [
@@ -92,6 +93,9 @@ function printHelp() {
     console.log("$ magichat ques-tion-name --> join an existing session\n");
     console.log("Once magichat starts, these actions are available (type and then press ENTER):\n");
     printInfo();
+}
+function printVersion() {
+    console.log("Magic Hat 🎩 0.0.1\n");
 }
 function printInfo() {
     console.log("> ENTER           --> go to next question");
@@ -132,6 +136,7 @@ function main() {
                     defaultSeconds = 60;
                     seconds = defaultSeconds;
                     repeating = false;
+                    printVersion();
                     if (process.argv.some(function (arg) { return /^--?h(elp)?$/i.test(arg); })) {
                         printHelp();
                         process.exit(0);
@@ -140,13 +145,13 @@ function main() {
                         printInfo();
                     }
                     _b = process.argv, _node = _b[0], _filename = _b[1], seed = _b[2];
-                    if (seed && !(0, magichat_1.magicHatIsValidSeed)(seed)) {
+                    if (seed && !(0, core_1.magicHatIsValidSeed)(seed)) {
                         console.warn("The magic hat doesn't understand your magic words. Could you please ask for them again? They should all have four letters, and there should be four of them.");
                         process.exit(1);
                     }
-                    _d = (0, magichat_1.magicHatBegin)(seed, function () {
+                    _d = (0, core_1.magicHatBegin)(seed, function () {
                         var _a;
-                        _a = (0, magichat_1.magicHatNext)(seed, seconds), seed = _a[0], question = _a[1];
+                        _a = (0, core_1.magicHatNext)(seed, seconds), seed = _a[0], question = _a[1];
                         askQuestion();
                     }), seed = _d[0], question = _d[1], seconds = _d[2];
                     askQuestion();
@@ -163,25 +168,25 @@ function main() {
                     _e = _c.apply(void 0, [_l.sent()]), action = _e[0], actionValue = _e[1];
                     switch (action) {
                         case Action.next: {
-                            _f = (0, magichat_1.magicHatNext)(seed, repeating ? seconds : null), seed = _f[0], question = _f[1];
+                            _f = (0, core_1.magicHatNext)(seed, repeating ? seconds : null), seed = _f[0], question = _f[1];
                             askQuestion();
                             break;
                         }
                         case Action.back: {
-                            _g = (0, magichat_1.magicHatBack)(seed, repeating ? seconds : null), seed = _g[0], question = _g[1];
+                            _g = (0, core_1.magicHatBack)(seed, repeating ? seconds : null), seed = _g[0], question = _g[1];
                             askQuestion();
                             break;
                         }
                         case Action.go: {
-                            _h = (0, magichat_1.magicHatGo)(actionValue, seed, repeating ? seconds : null), seed = _h[0], question = _h[1];
+                            _h = (0, core_1.magicHatGo)(actionValue, seed, repeating ? seconds : null), seed = _h[0], question = _h[1];
                             askQuestion();
                             break;
                         }
                         case Action.start: {
                             seconds = (_a = actionValue) !== null && _a !== void 0 ? _a : defaultSeconds;
-                            _j = (0, magichat_1.magicHatStartRepeat)(seed, seconds, function () {
+                            _j = (0, core_1.magicHatStartRepeat)(seed, seconds, function () {
                                 var _a;
-                                _a = (0, magichat_1.magicHatNext)(seed, seconds), seed = _a[0], question = _a[1];
+                                _a = (0, core_1.magicHatNext)(seed, seconds), seed = _a[0], question = _a[1];
                                 askQuestion();
                             }), seed = _j[0], question = _j[1], seconds = _j[2];
                             askQuestion();
@@ -189,7 +194,7 @@ function main() {
                             break;
                         }
                         case Action.pause: {
-                            _k = (0, magichat_1.magicHatStopRepeat)(seed), seed = _k[0], question = _k[1];
+                            _k = (0, core_1.magicHatStopRepeat)(seed), seed = _k[0], question = _k[1];
                             askQuestion();
                             setRepeatOff();
                             break;
@@ -218,7 +223,7 @@ for (var _i = 0, _a = [
 ]; _i < _a.length; _i++) {
     var event_1 = _a[_i];
     process.on(event_1, function () {
-        (0, magichat_1.magicHatStopRepeat)();
+        (0, core_1.magicHatStopRepeat)();
         console.log("Bye!");
         rl.close();
     });

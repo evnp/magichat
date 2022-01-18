@@ -142,13 +142,13 @@
       this[globalName] = mainExports;
     }
   }
-})({"hwdOs":[function(require,module,exports) {
+})({"8Wj8M":[function(require,module,exports) {
 "use strict";
 var HMR_HOST = null;
 var HMR_PORT = null;
 var HMR_SECURE = false;
 var HMR_ENV_HASH = "d6ea1d42532a7575";
-module.bundle.HMR_BUNDLE_ID = "bcd003d16ee3a080";
+module.bundle.HMR_BUNDLE_ID = "b0e4e87fd23765d0";
 function _toConsumableArray(arr) {
     return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
 }
@@ -518,26 +518,30 @@ function hmrAcceptRun(bundle, id) {
     acceptedAssets[id] = true;
 }
 
-},{}],"cd4ca":[function(require,module,exports) {
+},{}],"dQ0rW":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 var _l = require("L");
 var _lDefault = parcelHelpers.interopDefault(_l);
-var _magichat = require("./magichat");
-const elements = {
-    question: _lDefault.default("h1"),
-    repeating: _lDefault.default('input[type="checkbox"]'),
-    seconds: _lDefault.default('input[type="number"]'),
-    next: _lDefault.default("button.next"),
-    copy: _lDefault.default("button.copy")
-};
+var _core = require("./core");
+const questionHeading = _lDefault.default("h1");
+const repeatingCheckbox = _lDefault.default('input[type="checkbox"]');
+const secondsInput = _lDefault.default('input[type="number"]');
+const nextButton = _lDefault.default("button.next");
+const copyUrlButton = _lDefault.default("button.copy");
+const infoSection = _lDefault.default(".info");
+const copyCliButton = _lDefault.default("button.cli");
 let question;
 let seconds = 0;
 let repeating = false;
 let seed = window.location.pathname.slice(1); // slice off leading slash
-const originalCopyText = elements.copy.idx(0).textContent;
+const originalTitleText = document.title.trim();
+const originalCopyUrlText = copyUrlButton.idx(0).textContent.trim();
+const originalCopyCliText = copyCliButton.idx(0).textContent.trim();
 function askQuestion() {
-    elements.question.idx(0).textContent = question;
-    elements.copy.idx(0).textContent = originalCopyText;
+    document.title = `${originalTitleText} · ${seed}`;
+    questionHeading.idx(0).textContent = question;
+    copyUrlButton.idx(0).textContent = originalCopyUrlText;
+    copyCliButton.idx(0).textContent = `${originalCopyCliText} ${seed}`;
     window.history.pushState(null, "", `/${seed}`);
 }
 // Question-back functionality is accomplished via native browser history API:
@@ -545,59 +549,64 @@ function askQuestion() {
 window.onpopstate = function() {
     const prevSeed = seed;
     seed = window.location.pathname.slice(1); // slice off leading slash
-    if (seed.length && _magichat.magicHatIsValidSeed(seed)) {
-        [seed, question] = _magichat.magicHatGo(seed, prevSeed, repeating ? seconds : null);
+    if (seed.length && _core.magicHatIsValidSeed(seed)) {
+        [seed, question] = _core.magicHatGo(seed, prevSeed, repeating ? seconds : null);
         window.history.replaceState(null, "", `/${seed}`);
-        elements.question.idx(0).textContent = question;
+        questionHeading.idx(0).textContent = question;
     }
 };
-if (seed.length && !_magichat.magicHatIsValidSeed(seed)) {
+if (seed.length && !_core.magicHatIsValidSeed(seed)) {
     seed = "";
     window.history.replaceState(null, "", "/");
 }
 // Select initial question and generate seed if necessary:
-[seed, question, seconds] = _magichat.magicHatBegin(seed, ()=>{
-    [seed, question] = _magichat.magicHatNext(seed, seconds);
+[seed, question, seconds] = _core.magicHatBegin(seed, ()=>{
+    [seed, question] = _core.magicHatNext(seed, seconds);
     askQuestion();
 });
 // Ask initial question:
 askQuestion();
 if (seconds > 0) {
     repeating = true;
-    elements.seconds.idx(0).value = seconds;
-    elements.repeating.idx(0).checked = true;
+    secondsInput.idx(0).value = seconds;
+    repeatingCheckbox.idx(0).checked = true;
 }
-elements.next.on("click", ()=>{
-    [seed, question] = _magichat.magicHatNext(seed, repeating ? seconds : null);
+nextButton.on("click", ()=>{
+    [seed, question] = _core.magicHatNext(seed, repeating ? seconds : null);
     askQuestion();
 });
 function onRepeatSettingChange() {
-    const checked = elements.repeating.idx(0).checked;
+    const checked = repeatingCheckbox.idx(0).checked;
     if (checked) {
-        seconds = parseInt(elements.seconds.idx(0).value, 10);
-        [seed, question, seconds] = _magichat.magicHatStartRepeat(seed, seconds, ()=>{
-            [seed, question] = _magichat.magicHatNext(seed, seconds);
+        seconds = parseInt(secondsInput.idx(0).value, 10);
+        [seed, question, seconds] = _core.magicHatStartRepeat(seed, seconds, ()=>{
+            [seed, question] = _core.magicHatNext(seed, seconds);
             askQuestion();
         });
         askQuestion();
         repeating = true;
     } else if (!checked) {
-        [seed, question] = _magichat.magicHatStopRepeat(seed);
+        [seed, question] = _core.magicHatStopRepeat(seed);
         askQuestion();
         repeating = false;
     }
 }
-elements.repeating.on("change", onRepeatSettingChange);
-elements.seconds.on("change", ()=>{
-    elements.repeating.idx(0).checked = true;
+repeatingCheckbox.on("change", onRepeatSettingChange);
+secondsInput.on("change", ()=>{
+    repeatingCheckbox.idx(0).checked = true;
     onRepeatSettingChange();
 });
-elements.copy.on("click", ()=>{
+copyUrlButton.on("click", ()=>{
     _lDefault.default.copy(window.location.href);
-    elements.copy.idx(0).textContent = "Copied!";
+    copyUrlButton.idx(0).textContent = "Copied!";
+});
+infoSection.on("click", ()=>{
+    const button = copyCliButton.idx(0);
+    _lDefault.default.copy(button.textContent.trim());
+    button.textContent = "Copied!";
 });
 
-},{"L":"lHIzz","./magichat":"jXZyx","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lHIzz":[function(require,module,exports) {
+},{"L":"lHIzz","./core":"6Wpln","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lHIzz":[function(require,module,exports) {
 "use strict";
 /// L -- Functional, Minimalist DOM/Browser Utils ///
 var __assign = this && this.__assign || function() {
@@ -1300,7 +1309,7 @@ L.copy = function(text) {
 /// L.copy -- copy-to-clipboard with graceful degradation /// END ///
 exports["default"] = L;
 
-},{}],"jXZyx":[function(require,module,exports) {
+},{}],"6Wpln":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "magicHatIsValidSeed", ()=>magicHatIsValidSeed
@@ -3032,6 +3041,6 @@ exports.default = [
     "yuck", 
 ];
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["hwdOs","cd4ca"], "cd4ca", "parcelRequire4471")
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["8Wj8M","dQ0rW"], "dQ0rW", "parcelRequire4471")
 
-//# sourceMappingURL=index.6ee3a080.js.map
+//# sourceMappingURL=index.d23765d0.js.map
