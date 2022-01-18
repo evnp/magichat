@@ -8,7 +8,7 @@
     "baseUrl": ".",
     "types": ["jest", "node"],
     "lib": ["esnext", "dom"],
-    "outDir": "dist/"
+    "outDir": "docs/"
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]

@@ -1,5 +1,11 @@
-import { magicHat } from "../src/magichat";
+import { magicHatBegin } from "../src/core";
 
-test("magichat", () => {
-  expect(magicHat()).toBe("magichat!");
+describe("Magic Hat", () => {
+  test("TODO", () => {
+    expect(
+      magicHatBegin("seed", () => {
+        /* pass */
+      })
+    ).not.toBe(null);
+  });
 });
