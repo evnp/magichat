@@ -3,9 +3,10 @@
   "version": "0.0.1",
   "description": "A magical question-asking hat, which will ask you and your friends questions via browser or CLI.",
   "scripts": {
+    "start": "tsc && node build/magichat-cli.js",
     "test": "jest",
-    "lint": "eslint *.spec.ts",
-    "format": "eslint --fix *.spec.ts",
+    "lint": "eslint src/* test/*",
+    "format": "eslint --fix src/* test/*",
     "check": "tsc --noEmit",
     "build": "tsc",
     "precommit": "npm run format && npm run check",
@@ -19,6 +20,8 @@
   "license": "MIT",
   "devDependencies": {
     "@types/jest": "^27.0.3",
+    "@types/node": "17.0.9",
+    "@types/seedrandom": "3.0.1",
     "@typescript-eslint/eslint-plugin": "^5.8.1",
     "@typescript-eslint/parser": "^5.8.1",
     "eslint": "^8.5.0",
@@ -30,5 +33,7 @@
     "ts-jest": "^27.1.2",
     "typescript": "^4.5.4"
   },
-  "dependencies": {}
+  "dependencies": {
+    "seedrandom": "3.0.5"
+  }
 }

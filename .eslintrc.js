@@ -20,12 +20,17 @@ module.exports = {
     quotes: ["warn", "double", { avoidEscape: true }],
     "no-console": "off",
     "no-debugger": "warn",
+    "no-constant-condition": ["error", { checkLoops: false }],
     "prefer-const": ["warn", { destructuring: "all" }],
     // Turn off in favor of TS version below, which is aware of `import type {...`
     "no-unused-vars": "off",
     "@typescript-eslint/no-unused-vars": [
       "warn",
-      { ignoreRestSiblings: true },
+      {
+        argsIgnorePattern: "^_",
+        varsIgnorePattern: "^_",
+        ignoreRestSiblings: true,
+      },
       // `ignoreRestSiblings` allows easily "ommitting" key/value data from an object:
       // (see https://eslint.org/docs/rules/no-unused-vars#ignorerestsiblings)
     ],
