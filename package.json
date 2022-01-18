@@ -1,6 +1,6 @@
 {
   "name": "magicalhat",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A magical question-asking hat, which will ask you and your friends questions via browser or CLI.",
   "bin": {
     "magichat": "docs/cli.js"
@@ -40,6 +40,6 @@
   },
   "dependencies": {
     "seedrandom": "3.0.5",
-    "L": "github:evnp/L"
+    "L": "github:e2org/L"
   }
 }
