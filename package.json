@@ -1,6 +1,6 @@
 {
   "name": "magicalhat",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A magical question-asking hat, which will ask you and your friends questions via browser or CLI.",
   "bin": {
     "magichat": "docs/cli.js"
@@ -11,7 +11,7 @@
     "lint": "eslint src/**/*.ts test/**/*.ts",
     "format": "eslint --fix src/**/*.ts test/**/*.ts",
     "check": "tsc --noEmit",
-    "build": "tsc && chmod +x ./docs/cli.js && parcel build --dist-dir docs src/index.html && cp ./src/404.html ./docs/404.html",
+    "build": "rm docs/index.* && tsc && chmod +x ./docs/cli.js && parcel build --dist-dir docs src/index.html && cp ./src/404.html ./docs/404.html",
     "serve": "parcel --dist-dir docs src/index.html",
     "precommit": "npm run format && npm run check",
     "githook": "grep -qxF 'npm run precommit' .git/hooks/pre-commit || echo 'npm run precommit' >> .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit"

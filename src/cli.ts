@@ -70,7 +70,7 @@ function printHelp(): void {
 }
 
 function printVersion(): void {
-  console.log("\nMagic Hat 🎩 0.0.4\n");
+  console.log("\nMagic Hat 🎩 0.0.5\n");
   // need to implement method of bumping this automatically
 }
 
