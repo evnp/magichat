@@ -4,25 +4,37 @@ import questions from "./questions";
 import words from "./words";
 
 const seedHistory: Map<string, string | null> = new Map();
+const encounteredQuestionIndices: Set<number> = new Set();
 
 function newSeed(seed?: string | null, seconds?: number | null): string {
   const prevSeed = seed;
-  const baseSeed = seed && removeSeedSeconds(seed);
-  const reversedSeed = baseSeed && Array.from(baseSeed).reverse().join("");
-  let nextSeed = `${randWord(baseSeed)}-${randWord(reversedSeed)}`;
+  let rng;
+  let questionIdx;
+  let baseSeed;
+  let rvsdSeed;
+
+  // Ensure no duplicate questions are asked:
+  do {
+    baseSeed = seed && removeSeedSeconds(seed);
+    rvsdSeed = baseSeed && Array.from(baseSeed).reverse().join("");
+    seed = `${randWord(baseSeed)}-${randWord(rvsdSeed)}`;
+    rng = seedrandom(seed);
+    questionIdx = Math.floor(rng() * questions.length);
+  } while (encounteredQuestionIndices.has(questionIdx));
+  encounteredQuestionIndices.add(questionIdx);
 
   if (seconds) {
-    nextSeed = updateSeedSeconds(nextSeed, seconds);
+    seed = updateSeedSeconds(seed, seconds);
   }
 
   // Maintain seed history for back/forth question navigation:
   // note: omit seconds from seed history so that mechanisms may operate independently
   seedHistory.set(
-    removeSeedSeconds(nextSeed),
+    removeSeedSeconds(seed),
     prevSeed ? removeSeedSeconds(prevSeed) : null
   );
 
-  return nextSeed;
+  return seed;
 }
 
 function randWord(seed?: string | null): string {

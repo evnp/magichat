@@ -95,7 +95,7 @@ function printHelp() {
     printInfo();
 }
 function printVersion() {
-    console.log("\nMagic Hat 🎩 0.0.3\n");
+    console.log("\nMagic Hat 🎩 0.0.4\n");
     // need to implement method of bumping this automatically
 }
 function printInfo() {

@@ -8,18 +8,29 @@ var seedrandom_1 = __importDefault(require("seedrandom"));
 var questions_1 = __importDefault(require("./questions"));
 var words_1 = __importDefault(require("./words"));
 var seedHistory = new Map();
+var encounteredQuestionIndices = new Set();
 function newSeed(seed, seconds) {
     var prevSeed = seed;
-    var baseSeed = seed && removeSeedSeconds(seed);
-    var reversedSeed = baseSeed && Array.from(baseSeed).reverse().join("");
-    var nextSeed = "".concat(randWord(baseSeed), "-").concat(randWord(reversedSeed));
+    var rng;
+    var questionIdx;
+    var baseSeed;
+    var rvsdSeed;
+    // Ensure no duplicate questions are asked:
+    do {
+        baseSeed = seed && removeSeedSeconds(seed);
+        rvsdSeed = baseSeed && Array.from(baseSeed).reverse().join("");
+        seed = "".concat(randWord(baseSeed), "-").concat(randWord(rvsdSeed));
+        rng = (0, seedrandom_1.default)(seed);
+        questionIdx = Math.floor(rng() * questions_1.default.length);
+    } while (encounteredQuestionIndices.has(questionIdx));
+    encounteredQuestionIndices.add(questionIdx);
     if (seconds) {
-        nextSeed = updateSeedSeconds(nextSeed, seconds);
+        seed = updateSeedSeconds(seed, seconds);
     }
     // Maintain seed history for back/forth question navigation:
     // note: omit seconds from seed history so that mechanisms may operate independently
-    seedHistory.set(removeSeedSeconds(nextSeed), prevSeed ? removeSeedSeconds(prevSeed) : null);
-    return nextSeed;
+    seedHistory.set(removeSeedSeconds(seed), prevSeed ? removeSeedSeconds(prevSeed) : null);
+    return seed;
 }
 function randWord(seed) {
     var rng = seed ? (0, seedrandom_1.default)(seed) : Math.random;
