@@ -5,10 +5,11 @@
   "scripts": {
     "start": "tsc && node build/magichat-cli.js",
     "test": "jest",
-    "lint": "eslint src/* test/*",
-    "format": "eslint --fix src/* test/*",
+    "lint": "eslint src/**/*.ts test/**/*.ts",
+    "format": "eslint --fix src/**/*.ts test/**/*.ts",
     "check": "tsc --noEmit",
-    "build": "tsc",
+    "build": "tsc && parcel build src/index.html",
+    "serve": "parcel src/index.html",
     "precommit": "npm run format && npm run check",
     "githook": "grep -qxF 'npm run precommit' .git/hooks/pre-commit || echo 'npm run precommit' >> .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit"
   },
@@ -29,11 +30,13 @@
     "eslint-plugin-jest": "^25.3.2",
     "eslint-plugin-prettier": "^4.0.0",
     "jest": "^27.4.5",
+    "parcel": "2.2.1",
     "prettier": "^2.5.1",
     "ts-jest": "^27.1.2",
     "typescript": "^4.5.4"
   },
   "dependencies": {
-    "seedrandom": "3.0.5"
+    "seedrandom": "3.0.5",
+    "L": "github:evnp/L"
   }
 }
