@@ -28,12 +28,16 @@ const originalTitleText = document.title.trim();
 const originalCopyUrlText = copyUrlButton.idx(0).textContent.trim();
 const originalCopyCliText = copyCliButton.idx(0).textContent.trim();
 
+const LOCAL_STORAGE_KEY = "MAGIC_HAT_NEXT_QUESTION";
+
 function askQuestion() {
   document.title = `${originalTitleText} · ${seed}`;
   questionHeading.idx(0).textContent = question;
   copyUrlButton.idx(0).textContent = originalCopyUrlText;
   copyCliButton.idx(0).textContent = `${originalCopyCliText} ${seed}`;
   window.history.pushState(null, "", `/${seed}`);
+  const [nextSeed] = magicHatNext(seed, repeating ? seconds : null);
+  window.localStorage?.setItem(LOCAL_STORAGE_KEY, nextSeed);
 }
 
 // Question-back functionality is accomplished via native browser history API:
@@ -47,9 +51,17 @@ window.onpopstate = function () {
   }
 };
 
+// If provided seed is invalid, clear it to ensure a new random seed will be set:
 if (seed.length && !magicHatIsValidSeed(seed)) {
   seed = "";
   window.history.replaceState(null, "", "/");
+}
+
+// If no see was provided (or seed was invalid), check whether a next-seed was
+// previously persisted in localStorage; if so, load it. This will ensure
+// duplicate questions are not shown on the same device (until broser data cleared)
+if (seed === "") {
+  seed = window.localStorage?.getItem(LOCAL_STORAGE_KEY) ?? "";
 }
 
 // Select initial question and generate seed if necessary:

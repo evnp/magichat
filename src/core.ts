@@ -102,7 +102,7 @@ function removeSeedSeconds(seed: string): string {
 
 function updateSeedSeconds(seed: string, seconds: number): string {
   const secQuotient = Math.floor(seconds / words.length);
-  const secRemainder = seconds % 100;
+  const secRemainder = seconds % words.length;
   seed = removeSeedSeconds(seed) + `-${words[secRemainder]}`;
   if (secQuotient) {
     seed += `-${words[secQuotient]}`;

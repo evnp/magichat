@@ -93,7 +93,7 @@ function removeSeedSeconds(seed) {
 }
 function updateSeedSeconds(seed, seconds) {
     var secQuotient = Math.floor(seconds / words_1.default.length);
-    var secRemainder = seconds % 100;
+    var secRemainder = seconds % words_1.default.length;
     seed = removeSeedSeconds(seed) + "-".concat(words_1.default[secRemainder]);
     if (secQuotient) {
         seed += "-".concat(words_1.default[secQuotient]);
