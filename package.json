@@ -26,6 +26,7 @@
     "@types/jest": "^27.0.3",
     "@types/node": "17.0.9",
     "@types/seedrandom": "3.0.1",
+    "@types/tmp": "0.2.3",
     "@typescript-eslint/eslint-plugin": "^5.8.1",
     "@typescript-eslint/parser": "^5.8.1",
     "eslint": "^8.5.0",
@@ -39,7 +40,7 @@
     "typescript": "^4.5.4"
   },
   "dependencies": {
-    "seedrandom": "3.0.5",
-    "L": "github:e2org/L"
+    "L": "github:e2org/L",
+    "seedrandom": "3.0.5"
   }
 }

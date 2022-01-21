@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 
 import readline from "readline";
+import path from "path";
+import fs from "fs";
+import os from "os";
 
 import {
   magicHatBegin,
@@ -100,6 +103,10 @@ async function main() {
   let seconds = defaultSeconds;
   let repeating = false;
 
+  const NEXT_SEED_FILE_NAME = "magic-hat-next-question.txt";
+  const nextSeedFilePath = path.join(os.tmpdir(), NEXT_SEED_FILE_NAME);
+  let warnedNextSeedFileError = false;
+
   printVersion();
 
   if (process.argv.some((arg) => /^--?h(elp)?$/i.test(arg))) {
@@ -117,6 +124,20 @@ async function main() {
         `\n         $ magichat ${seed}\n\n`
     );
     console.log(`[ Question "${seed}" ] ${question}\n`);
+    const [nextSeed] = magicHatNext(seed, repeating ? seconds : null);
+    // write asynchronously - this can happen in background and not block:
+    fs.writeFile(nextSeedFilePath, nextSeed, (err) => {
+      if (err && !warnedNextSeedFileError) {
+        warnedNextSeedFileError = true;
+        console.warn(
+          "\nWarning: Couldn't persist next question, you may encounter duplicates."
+        );
+        console.warn(
+          "Please make sure you have correct permissions to access directories in this file path:"
+        );
+        console.warn(nextSeedFilePath + "\n");
+      }
+    });
   }
 
   function setRepeatOn(): void {
@@ -142,6 +163,13 @@ async function main() {
       "The magic hat doesn't understand your magic words. Could you please ask for them again? They should all have four letters, and there should be four of them."
     );
     process.exit(1);
+  }
+
+  // If no see was provided, check whether a next-seed was previously
+  // persisted in localStorage; if so, load it. This will ensure duplicate
+  // questions are not shown on the same device (until tmp files cleared):
+  if (!seed) {
+    seed = fs.readFileSync(nextSeedFilePath).toString();
   }
 
   [seed, question, seconds] = magicHatBegin(seed, () => {

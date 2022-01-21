@@ -41,6 +41,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var readline_1 = __importDefault(require("readline"));
+var path_1 = __importDefault(require("path"));
+var fs_1 = __importDefault(require("fs"));
+var os_1 = __importDefault(require("os"));
 var core_1 = require("./core");
 var rl = readline_1.default.createInterface({
     input: process.stdin,
@@ -116,6 +119,16 @@ function main() {
             console.log("\n    Share: https://magichat.e2.gg/".concat(seed) +
                 "\n         $ magichat ".concat(seed, "\n\n"));
             console.log("[ Question \"".concat(seed, "\" ] ").concat(question, "\n"));
+            var nextSeed = (0, core_1.magicHatNext)(seed, repeating ? seconds : null)[0];
+            // write asynchronously - this can happen in background and not block:
+            fs_1.default.writeFile(nextSeedFilePath, nextSeed, function (err) {
+                if (err && !warnedNextSeedFileError) {
+                    warnedNextSeedFileError = true;
+                    console.warn("\nWarning: Couldn't persist next question, you may encounter duplicates.");
+                    console.warn("Please make sure you have correct permissions to access directories in this file path:");
+                    console.warn(nextSeedFilePath + "\n");
+                }
+            });
         }
         function setRepeatOn() {
             repeating = true;
@@ -129,7 +142,7 @@ function main() {
                     "every ".concat(seconds, " seconds; enter \"start\" to resume)\n"));
             }
         }
-        var question, action, actionValue, defaultSeconds, seconds, repeating, _b, _node, _filename, seed, _c;
+        var question, action, actionValue, defaultSeconds, seconds, repeating, NEXT_SEED_FILE_NAME, nextSeedFilePath, warnedNextSeedFileError, _b, _node, _filename, seed, _c;
         var _d, _e, _f, _g, _h, _j, _k;
         return __generator(this, function (_l) {
             switch (_l.label) {
@@ -137,6 +150,9 @@ function main() {
                     defaultSeconds = 60;
                     seconds = defaultSeconds;
                     repeating = false;
+                    NEXT_SEED_FILE_NAME = "magic-hat-next-question.txt";
+                    nextSeedFilePath = path_1.default.join(os_1.default.tmpdir(), NEXT_SEED_FILE_NAME);
+                    warnedNextSeedFileError = false;
                     printVersion();
                     if (process.argv.some(function (arg) { return /^--?h(elp)?$/i.test(arg); })) {
                         printHelp();
@@ -149,6 +165,12 @@ function main() {
                     if (seed && !(0, core_1.magicHatIsValidSeed)(seed)) {
                         console.warn("The magic hat doesn't understand your magic words. Could you please ask for them again? They should all have four letters, and there should be four of them.");
                         process.exit(1);
+                    }
+                    // If no see was provided, check whether a next-seed was previously
+                    // persisted in localStorage; if so, load it. This will ensure duplicate
+                    // questions are not shown on the same device (until tmp files cleared):
+                    if (!seed) {
+                        seed = fs_1.default.readFileSync(nextSeedFilePath).toString();
                     }
                     _d = (0, core_1.magicHatBegin)(seed, function () {
                         var _a;
