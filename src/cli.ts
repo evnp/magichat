@@ -73,7 +73,7 @@ function printHelp(): void {
 }
 
 function printVersion(): void {
-  console.log("\nMagic Hat 🎩 0.0.5\n");
+  console.log("\nMagic Hat 🎩 0.0.6\n");
   // need to implement method of bumping this automatically
 }
 
@@ -101,6 +101,7 @@ async function main() {
   let actionValue;
   const defaultSeconds = 60; // default to 1 minute ask repeat duration:
   let seconds = defaultSeconds;
+  let initialInterval: number;
   let repeating = false;
 
   const NEXT_SEED_FILE_NAME = "magic-hat-next-question.txt";
@@ -118,13 +119,21 @@ async function main() {
 
   let [_node, _filename, seed] = process.argv;
 
-  function askQuestion(): void {
+  function askQuestion({
+    repeat = null,
+  }: { repeat?: boolean | null } = {}): void {
+    if (typeof repeat === "boolean") {
+      repeating = repeat;
+    }
+
     console.log(
       `\n    Share: https://magichat.e2.gg/${seed}` +
         `\n         $ magichat ${seed}\n\n`
     );
     console.log(`[ Question "${seed}" ] ${question}\n`);
+
     const [nextSeed] = magicHatNext(seed, repeating ? seconds : null);
+
     // write asynchronously - this can happen in background and not block:
     fs.writeFile(nextSeedFilePath, nextSeed, (err) => {
       if (err && !warnedNextSeedFileError) {
@@ -138,19 +147,21 @@ async function main() {
         console.warn(nextSeedFilePath + "\n");
       }
     });
-  }
 
-  function setRepeatOn(): void {
-    repeating = true;
-    console.log(
-      "(the magic hat will ask a new question " +
-        `every ${seconds} seconds; enter "pause" to cancel)\n`
-    );
-  }
+    if (repeat === true) {
+      console.log(
+        "(the magic hat will ask a new question " +
+          `every ${seconds} seconds; enter "pause" to cancel)`
+      );
+      if (initialInterval !== seconds) {
+        console.log(
+          `(time until first question will be only ${initialInterval} seconds in order to synchronize sessions)`
+        );
+      }
+      console.log(""); // insert newline
+    }
 
-  function setRepeatOff(): void {
-    if (repeating) {
-      repeating = false;
+    if (repeat === false) {
       console.log(
         "(the magic hat will no longer ask a new question " +
           `every ${seconds} seconds; enter "start" to resume)\n`
@@ -172,15 +183,15 @@ async function main() {
     seed = fs.readFileSync(nextSeedFilePath).toString();
   }
 
-  [seed, question, seconds] = magicHatBegin(seed, () => {
+  [seed, question, seconds, initialInterval] = magicHatBegin(seed, () => {
     [seed, question] = magicHatNext(seed, seconds);
     askQuestion();
   });
 
-  askQuestion();
-
   if (seconds > 0) {
-    setRepeatOn();
+    askQuestion({ repeat: true });
+  } else {
+    askQuestion();
   }
 
   while (true) {
@@ -207,18 +218,20 @@ async function main() {
       }
       case Action.start: {
         seconds = (actionValue as number) ?? defaultSeconds;
-        [seed, question, seconds] = magicHatStartRepeat(seed, seconds, () => {
-          [seed, question] = magicHatNext(seed, seconds);
-          askQuestion();
-        });
-        askQuestion();
-        setRepeatOn();
+        [seed, question, seconds, initialInterval] = magicHatStartRepeat(
+          seed,
+          seconds,
+          () => {
+            [seed, question] = magicHatNext(seed, seconds);
+            askQuestion();
+          }
+        );
+        askQuestion({ repeat: true });
         break;
       }
       case Action.pause: {
         [seed, question] = magicHatStopRepeat(seed);
-        askQuestion();
-        setRepeatOff();
+        askQuestion({ repeat: false });
         break;
       }
       case Action.invalid: {

@@ -115,7 +115,11 @@ function printInfo() {
 function main() {
     var _a;
     return __awaiter(this, void 0, void 0, function () {
-        function askQuestion() {
+        function askQuestion(_a) {
+            var _b = _a === void 0 ? {} : _a, _c = _b.repeat, repeat = _c === void 0 ? null : _c;
+            if (typeof repeat === "boolean") {
+                repeating = repeat;
+            }
             console.log("\n    Share: https://magichat.e2.gg/".concat(seed) +
                 "\n         $ magichat ".concat(seed, "\n\n"));
             console.log("[ Question \"".concat(seed, "\" ] ").concat(question, "\n"));
@@ -129,20 +133,20 @@ function main() {
                     console.warn(nextSeedFilePath + "\n");
                 }
             });
-        }
-        function setRepeatOn() {
-            repeating = true;
-            console.log("(the magic hat will ask a new question " +
-                "every ".concat(seconds, " seconds; enter \"pause\" to cancel)\n"));
-        }
-        function setRepeatOff() {
-            if (repeating) {
-                repeating = false;
+            if (repeat === true) {
+                console.log("(the magic hat will ask a new question " +
+                    "every ".concat(seconds, " seconds; enter \"pause\" to cancel)"));
+                if (initialInterval !== seconds) {
+                    console.log("(time until first question will be only ".concat(initialInterval, " seconds in order to synchronize sessions)"));
+                }
+                console.log(""); // insert newline
+            }
+            if (repeat === false) {
                 console.log("(the magic hat will no longer ask a new question " +
                     "every ".concat(seconds, " seconds; enter \"start\" to resume)\n"));
             }
         }
-        var question, action, actionValue, defaultSeconds, seconds, repeating, NEXT_SEED_FILE_NAME, nextSeedFilePath, warnedNextSeedFileError, _b, _node, _filename, seed, _c;
+        var question, action, actionValue, defaultSeconds, seconds, initialInterval, repeating, NEXT_SEED_FILE_NAME, nextSeedFilePath, warnedNextSeedFileError, _b, _node, _filename, seed, _c;
         var _d, _e, _f, _g, _h, _j, _k;
         return __generator(this, function (_l) {
             switch (_l.label) {
@@ -176,10 +180,12 @@ function main() {
                         var _a;
                         _a = (0, core_1.magicHatNext)(seed, seconds), seed = _a[0], question = _a[1];
                         askQuestion();
-                    }), seed = _d[0], question = _d[1], seconds = _d[2];
-                    askQuestion();
+                    }), seed = _d[0], question = _d[1], seconds = _d[2], initialInterval = _d[3];
                     if (seconds > 0) {
-                        setRepeatOn();
+                        askQuestion({ repeat: true });
+                    }
+                    else {
+                        askQuestion();
                     }
                     _l.label = 1;
                 case 1:
@@ -211,15 +217,13 @@ function main() {
                                 var _a;
                                 _a = (0, core_1.magicHatNext)(seed, seconds), seed = _a[0], question = _a[1];
                                 askQuestion();
-                            }), seed = _j[0], question = _j[1], seconds = _j[2];
-                            askQuestion();
-                            setRepeatOn();
+                            }), seed = _j[0], question = _j[1], seconds = _j[2], initialInterval = _j[3];
+                            askQuestion({ repeat: true });
                             break;
                         }
                         case Action.pause: {
                             _k = (0, core_1.magicHatStopRepeat)(seed), seed = _k[0], question = _k[1];
-                            askQuestion();
-                            setRepeatOff();
+                            askQuestion({ repeat: false });
                             break;
                         }
                         case Action.invalid: {

@@ -145,7 +145,7 @@ export function magicHatIsValidSeed(seed: string): boolean {
 export function magicHatBegin(
   seed: string | null,
   handler: (seed: string, question: string) => void
-): [string, string, number] {
+): [string, string, number, number] {
   seed = seed?.length ? seed : nextSeed(seed);
 
   const seconds = parseSeedSeconds(seed);
@@ -153,7 +153,7 @@ export function magicHatBegin(
   if (seconds > 0) {
     return magicHatStartRepeat(seed, seconds, handler);
   } else {
-    return [seed, questionFromSeed(seed), 0]; // zero seconds -> no repeat
+    return [seed, questionFromSeed(seed), 0, 0]; // zero seconds -> no repeat
   }
 }
 
@@ -192,17 +192,44 @@ export function magicHatStartRepeat(
   seed: string,
   seconds: number,
   handler: (seed: string, question: string) => void
-): [string, string, number] {
+): [string, string, number, number] {
   seed = updateSeedSeconds(seed, seconds);
 
   magicHatStopRepeat(seed);
 
-  repeatIntervalID = setInterval(() => {
+  // Multi-session timer syncing
+  // Works by aligning session timers against start of current day (UTC).
+  // See code comments below for details.
+  const currSecondsUTC = Math.floor(new Date().getTime() / 1000);
+  const startOfDayUTC = Math.floor(new Date().setUTCHours(0, 0, 0, 0) / 1000);
+  const offsetSeconds = (currSecondsUTC - startOfDayUTC) % seconds;
+  const initialInterval = seconds - offsetSeconds;
+
+  function setQuestionInterval() {
     seed = nextSeed(seed, seconds);
     handler(seed, questionFromSeed(seed));
-  }, seconds * 1000);
+    repeatIntervalID = setInterval(() => {
+      seed = nextSeed(seed, seconds);
+      handler(seed, questionFromSeed(seed));
+    }, seconds * 1000);
+  }
 
-  return [seed, questionFromSeed(seed), seconds];
+  if (initialInterval === 0) {
+    // Handle case where offset triggers next question exactly on the momentary
+    // boundary between questions; in this case we should manually advance the
+    // question by one and set the interval as normal:
+    seed = nextSeed(seed, seconds);
+    handler(seed, questionFromSeed(seed));
+    setQuestionInterval();
+  } else {
+    // Otherwise, trigger the first question after a shorter "initial interval"
+    // intended to align all sessions against the start of current day (UTC).
+    // Only after this first short interval will we set the normal question
+    // interval to occur every N seconds:
+    repeatIntervalID = setTimeout(setQuestionInterval, initialInterval * 1000);
+  }
+
+  return [seed, questionFromSeed(seed), seconds, initialInterval];
 }
 
 export function magicHatStopRepeat(seed?: string | null): [string, string] {
