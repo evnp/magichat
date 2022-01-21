@@ -21,18 +21,21 @@
     <div class="magichat">
       <h1></h1>
       <div class="controls">
-        <label>
-          <input type="checkbox" />
-          <span>new question every</span>
-        </label>
-        <label>
-          <input type="number" value="60" size="4" />
-          <span>seconds</span>
-        </label>
-        <button class="next">next question</button>
-        <button class="copy">copy url to share</button>
+        <button class="prev">← previous question</button>
+        <span class="timer">
+          <label>
+            <input type="checkbox" />
+            <span>new question every</span>
+          </label>
+          <label>
+            <input type="number" value="60" size="4" />
+            <span>seconds</span>
+          </label>
+        </span>
+        <button class="next">next question →</button>
       </div>
       <div class="info">
+        <button class="copy">copy url to share</button>
         or run
         <button class="cli">
           npm install -g magicalhat &amp;&amp; magichat

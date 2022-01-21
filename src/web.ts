@@ -3,6 +3,7 @@ import L from "L";
 import {
   magicHatBegin,
   magicHatNext,
+  magicHatBack,
   magicHatGo,
   magicHatStartRepeat,
   magicHatStopRepeat,
@@ -13,6 +14,7 @@ const questionHeading = L("h1");
 const repeatingCheckbox = L('input[type="checkbox"]');
 const secondsInput = L('input[type="number"]');
 const nextButton = L("button.next");
+const prevButton = L("button.prev");
 const copyUrlButton = L("button.copy");
 const infoSection = L(".info");
 const copyCliButton = L("button.cli");
@@ -70,6 +72,11 @@ nextButton.on("click", () => {
   askQuestion();
 });
 
+prevButton.on("click", () => {
+  [seed, question] = magicHatBack(seed, repeating ? seconds : null);
+  askQuestion();
+});
+
 function onRepeatSettingChange() {
   const checked = repeatingCheckbox.idx(0).checked;
   if (checked) {
@@ -93,7 +100,8 @@ secondsInput.on("change", () => {
   onRepeatSettingChange();
 });
 
-copyUrlButton.on("click", () => {
+copyUrlButton.on("click", (ev: Event) => {
+  ev.stopPropagation();
   L.copy(window.location.href);
   copyUrlButton.idx(0).textContent = "Copied!";
 });
