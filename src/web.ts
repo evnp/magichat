@@ -62,6 +62,13 @@ if (seed.length && !magicHatIsValidSeed(seed)) {
 // duplicate questions are not shown on the same device (until broser data cleared)
 if (seed === "") {
   seed = window.localStorage?.getItem(LOCAL_STORAGE_KEY) ?? "";
+  // If persisted seed invalid, fall back to random seed
+  // and delete from persistence:
+  if (!magicHatIsValidSeed(seed)) {
+    console.warn("Warning: encountered invalid seed in localStorage");
+    seed = "";
+    window.localStorage?.removeItem(LOCAL_STORAGE_KEY);
+  }
 }
 
 // Select initial question and generate seed if necessary:

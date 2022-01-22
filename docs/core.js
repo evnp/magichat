@@ -160,6 +160,12 @@ function parseSeedSeconds(seed) {
     return secQuotient * words.length + secRemainder;
 }
 function magicHatIsValidSeed(seed) {
+    try {
+        questionFromSeed(seed);
+    }
+    catch (err) {
+        return false;
+    }
     seed = seed.split("-").join("").toLowerCase();
     return (seed.length >= 8 &&
         seed.length <= 16 &&

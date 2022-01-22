@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 var _a;
-var _b, _c;
+var _b, _c, _d;
 Object.defineProperty(exports, "__esModule", { value: true });
 var L_1 = __importDefault(require("L"));
 var core_1 = require("./core");
@@ -54,6 +54,13 @@ if (seed.length && !(0, core_1.magicHatIsValidSeed)(seed)) {
 // duplicate questions are not shown on the same device (until broser data cleared)
 if (seed === "") {
     seed = (_c = (_b = window.localStorage) === null || _b === void 0 ? void 0 : _b.getItem(LOCAL_STORAGE_KEY)) !== null && _c !== void 0 ? _c : "";
+    // If persisted seed invalid, fall back to random seed
+    // and delete from persistence:
+    if (!(0, core_1.magicHatIsValidSeed)(seed)) {
+        console.warn("Warning: encountered invalid seed in localStorage");
+        seed = "";
+        (_d = window.localStorage) === null || _d === void 0 ? void 0 : _d.removeItem(LOCAL_STORAGE_KEY);
+    }
 }
 // Select initial question and generate seed if necessary:
 _a = (0, core_1.magicHatBegin)(seed, function () {

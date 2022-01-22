@@ -73,7 +73,7 @@ function printHelp(): void {
 }
 
 function printVersion(): void {
-  console.log("\nMagic Hat 🎩 0.0.7\n");
+  console.log("\nMagic Hat 🎩 0.0.8\n");
   // need to implement method of bumping this automatically
 }
 
@@ -180,7 +180,16 @@ async function main() {
   // persisted in localStorage; if so, load it. This will ensure duplicate
   // questions are not shown on the same device (until tmp files cleared):
   if (!seed) {
-    seed = fs.readFileSync(nextSeedFilePath).toString();
+    try {
+      seed = fs.readFileSync(nextSeedFilePath).toString();
+      if (!magicHatIsValidSeed(seed)) {
+        seed = "";
+        fs.unlinkSync(nextSeedFilePath); // delete invalid seed file
+      }
+      // Handle any errors here gracefully by falling back to random seed:
+    } catch (err) {
+      seed = "";
+    }
   }
 
   [seed, question, seconds, initialInterval] = magicHatBegin(seed, () => {

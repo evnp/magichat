@@ -174,6 +174,11 @@ function parseSeedSeconds(seed: string): number {
 }
 
 export function magicHatIsValidSeed(seed: string): boolean {
+  try {
+    questionFromSeed(seed);
+  } catch (err) {
+    return false;
+  }
   seed = seed.split("-").join("").toLowerCase();
   return (
     seed.length >= 8 &&

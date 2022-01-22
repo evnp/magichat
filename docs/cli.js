@@ -98,7 +98,7 @@ function printHelp() {
     printInfo();
 }
 function printVersion() {
-    console.log("\nMagic Hat 🎩 0.0.7\n");
+    console.log("\nMagic Hat 🎩 0.0.8\n");
     // need to implement method of bumping this automatically
 }
 function printInfo() {
@@ -174,7 +174,17 @@ function main() {
                     // persisted in localStorage; if so, load it. This will ensure duplicate
                     // questions are not shown on the same device (until tmp files cleared):
                     if (!seed) {
-                        seed = fs_1.default.readFileSync(nextSeedFilePath).toString();
+                        try {
+                            seed = fs_1.default.readFileSync(nextSeedFilePath).toString();
+                            if (!(0, core_1.magicHatIsValidSeed)(seed)) {
+                                seed = "";
+                                fs_1.default.unlinkSync(nextSeedFilePath); // delete invalid seed file
+                            }
+                            // Handle any errors here gracefully by falling back to random seed:
+                        }
+                        catch (err) {
+                            seed = "";
+                        }
                     }
                     _d = (0, core_1.magicHatBegin)(seed, function () {
                         var _a;
