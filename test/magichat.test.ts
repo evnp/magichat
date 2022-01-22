@@ -1,11 +1,29 @@
-import { magicHatBegin } from "../src/core";
+import questions from "../src/questions";
+import { calcNonRepeatingStepSize } from "../src/core";
 
 describe("Magic Hat", () => {
-  test("TODO", () => {
-    expect(
-      magicHatBegin("seed", () => {
-        /* pass */
-      })
-    ).not.toBe(null);
+  test("question list step size", () => {
+    // Double current question list size to thoroughly test potential values:
+    const qList = questions.concat(questions);
+
+    for (let len = 0; len < qList.length; len++) {
+      const qSubList = qList.slice(0, len + 1);
+      const stepSize = calcNonRepeatingStepSize(qSubList.length);
+
+      let idx = 0;
+      const selections: number[] = [];
+      while (!selections.includes(idx)) {
+        selections.push(idx);
+        idx = (idx + stepSize) % qSubList.length;
+      }
+
+      // Ensure resulting selections array contains no duplicates;
+      expect(Array.from(new Set(selections)).length).toBe(selections.length);
+
+      // Ensure resulting selections array has the same values as input array:
+      expect(selections.sort((a, b) => a - b)).toStrictEqual(
+        Object.keys(qSubList).map(Number)
+      );
+    }
   });
 });

@@ -16,9 +16,29 @@ function factors(n: number): [number, number] {
   return [largeFac, smallFac];
 }
 
-// Pick a step size which, when advancing through the questions list
-// circularily, will eventually hit all items with no duplicates:
-const questionListStepSize = Math.floor(questions.length / 2) + 1;
+function isPrime(n: number): boolean {
+  for (let i = 2; i < n; i++) {
+    if (n % i === 0) {
+      return false;
+    }
+  }
+  return n > 1;
+}
+
+export function calcNonRepeatingStepSize(n: number): number {
+  // Pick a step size which, when advancing through the questions list
+  // circularily, will eventually hit all items with no duplicates:
+  let step = 1;
+  if (n > 2) {
+    step = Math.floor(n / 2) + 1;
+    while (!isPrime(step)) {
+      step++;
+    }
+  }
+  return step;
+}
+
+const questionListStepSize = calcNonRepeatingStepSize(questions.length);
 
 // Reverse-map word indices for performant lookup:
 const wordIdxMap = new Map(words.map((word, idx) => [word, idx]));

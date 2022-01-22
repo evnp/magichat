@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.magicHatStopRepeat = exports.magicHatStartRepeat = exports.magicHatGo = exports.magicHatBack = exports.magicHatNext = exports.magicHatBegin = exports.magicHatIsValidSeed = void 0;
+exports.magicHatStopRepeat = exports.magicHatStartRepeat = exports.magicHatGo = exports.magicHatBack = exports.magicHatNext = exports.magicHatBegin = exports.magicHatIsValidSeed = exports.calcNonRepeatingStepSize = void 0;
 var questions_1 = __importDefault(require("./questions"));
 var words_1 = __importDefault(require("./words"));
 // Find the closest two numbers which multiply to produce N:
@@ -21,9 +21,28 @@ function factors(n) {
     }
     return [largeFac, smallFac];
 }
-// Pick a step size which, when advancing through the questions list
-// circularily, will eventually hit all items with no duplicates:
-var questionListStepSize = Math.floor(questions_1.default.length / 2) + 1;
+function isPrime(n) {
+    for (var i = 2; i < n; i++) {
+        if (n % i === 0) {
+            return false;
+        }
+    }
+    return n > 1;
+}
+function calcNonRepeatingStepSize(n) {
+    // Pick a step size which, when advancing through the questions list
+    // circularily, will eventually hit all items with no duplicates:
+    var step = 1;
+    if (n > 2) {
+        step = Math.floor(n / 2) + 1;
+        while (!isPrime(step)) {
+            step++;
+        }
+    }
+    return step;
+}
+exports.calcNonRepeatingStepSize = calcNonRepeatingStepSize;
+var questionListStepSize = calcNonRepeatingStepSize(questions_1.default.length);
 // Reverse-map word indices for performant lookup:
 var wordIdxMap = new Map(words_1.default.map(function (word, idx) { return [word, idx]; }));
 function randWord() {
