@@ -1,19 +1,16 @@
+import seedrandom from "seedrandom";
 import questions from "./questions";
-import words from "./words";
+import sortedWords from "./words";
 
-// Find the closest two numbers which multiply to produce N:
-function factors(n: number): [number, number] {
-  const sqrt = Math.sqrt(n);
-  let largeFac = Math.ceil(sqrt);
-  let smallFac = Math.floor(sqrt);
-  while (largeFac * smallFac !== n) {
-    if (largeFac * smallFac < n) {
-      largeFac++;
-    } else {
-      smallFac--;
-    }
+function shuffle<T>(arr: T[]): T[] {
+  arr = Array.from(arr); // copy input array
+  let i = arr.length;
+  let dart;
+  while (i--) {
+    dart = Math.floor(seedrandom("")() * i);
+    [arr[i], arr[dart]] = [arr[dart], arr[i]];
   }
-  return [largeFac, smallFac];
+  return arr;
 }
 
 function isPrime(n: number): boolean {
@@ -23,6 +20,33 @@ function isPrime(n: number): boolean {
     }
   }
   return n > 1;
+}
+
+// Find two psuedo-random numbers which multiply to produce N:
+export function factors(n: number): [number, number] {
+  const sqrt = Math.sqrt(n);
+  // Skew initial factors by a small deterministically random amount:
+  let largeFac =
+    Math.ceil(sqrt) + Math.floor(seedrandom(`${n}`)() * (sqrt / 2));
+  let smallFac =
+    Math.floor(sqrt) - Math.floor(seedrandom(`${largeFac}`)() * (sqrt / 2));
+  while (largeFac * smallFac !== n) {
+    // Fallback: try roughly even factors if random-skewed factors didn't work:
+    if (smallFac < 1 || largeFac > n) {
+      largeFac = Math.ceil(sqrt);
+      smallFac = Math.floor(sqrt);
+    }
+    if (largeFac * smallFac < n) {
+      largeFac++;
+    } else {
+      smallFac--;
+    }
+  }
+  if (largeFac % 2) {
+    return [smallFac, largeFac];
+  } else {
+    return [largeFac, smallFac];
+  }
 }
 
 export function calcNonRepeatingStepSize(n: number): number {
@@ -38,6 +62,7 @@ export function calcNonRepeatingStepSize(n: number): number {
   return step;
 }
 
+const words = shuffle(sortedWords);
 const questionListStepSize = calcNonRepeatingStepSize(questions.length);
 
 // Reverse-map word indices for performant lookup:

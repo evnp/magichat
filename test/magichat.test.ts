@@ -1,8 +1,18 @@
 import questions from "../src/questions";
-import { calcNonRepeatingStepSize } from "../src/core";
+import { factors, calcNonRepeatingStepSize } from "../src/core";
 
 describe("Magic Hat", () => {
-  test("question list step size", () => {
+  test("question list index into psuedo-random factors", () => {
+    // Double current question list size to thoroughly test potential values:
+    const qList = questions.concat(questions);
+
+    for (let i = 10; i < qList.length; i++) {
+      const [facA, facB] = factors(i);
+      expect(facA * facB).toBe(i);
+    }
+  });
+
+  test("question list index step size for circular traversal", () => {
     // Double current question list size to thoroughly test potential values:
     const qList = questions.concat(questions);
 
